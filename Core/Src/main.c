@@ -25,15 +25,29 @@
 #include <string.h>
 #include <stdio.h>
 #include "usbd_cdc_if.h"
+#include "PanTompkins_hooman650.h"
+#include "PanTompkins_rafaelmmoreira.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+struct State{
+	uint8_t dataType;
+	uint8_t selectedImplementation;
+};
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define intasString 0x31
+#define int16asBytes 0x32
+
+#define hoomam650 0x31
+#define rafalmmoreira 0x32
+
+#define changeDataFormat 0x41
+#define changeSelectedAlgorithm 0x42
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -59,14 +73,119 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void parseLine (uint8_t* Buf, uint32_t Len)
+
+struct State applicationState;
+
+char str[60];
+uint16_t findStrEnd ()
 {
-	uint8_t b = Buf[0];
-	while (CDC_Transmit_FS(Buf, Len)!=USBD_OK)
+	uint16_t end = 10;
+	while (str[end]!='\0')
 	{
-		  HAL_Delay(1);
-	};
+		end++;
+		if (end == 60)
+		{
+			break;
+		}
+	}
+	return end;
 }
+void parseLine (uint8_t* Buf, uint32_t Len)
+{//Function parse one line from serial port
+	//In line can be command or data
+	if (Len>6)
+	{//command mast be longer than 6 bytes
+		if (Buf[0]==0x2B && Buf[1]==0x2B && Buf[2]==0x2B)
+		{//three ++ indicate command
+			switch (Buf[3])
+			{
+			case changeDataFormat:
+				applicationState.dataType = Buf[4];
+				break;
+			case changeSelectedAlgorithm:
+				applicationState.selectedImplementation = Buf[4];
+				if (applicationState.selectedImplementation == hoomam650)
+				{
+					PT_init();
+					sprintf(str,"OK, done.   \r\n");
+					while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+				}
+				if (applicationState.selectedImplementation == rafalmmoreira)
+				{
+					Rafael_init();
+					sprintf(str,"OK, done.   \r\n");
+					while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+				}
+
+				break;
+			default:
+				sprintf(str,"error...\r\n");
+				while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+				break;
+			}
+			return;
+		}
+	}
+
+	int16_t dataSample;
+	switch (applicationState.dataType)
+	{//decode data
+	case int16asBytes:
+		dataSample = (Buf[0]<<8)|Buf[1];
+
+		break;
+	case intasString:
+		dataSample = atoi (Buf);
+
+		break;
+	default:
+		sprintf(str,"error...\r\n");
+		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+		return;
+		break;
+	}
+
+	int16_t delay;
+	int16_t s1;
+	int16_t s2;
+	int16_t s3;
+	int16_t s4;
+	int16_t s5;
+	int16_t ThI1;
+	int16_t ThF1;
+
+	switch (applicationState.selectedImplementation)
+	{//decode data
+	case hoomam650:
+		delay = PT_StateMachine (dataSample);
+		s1 = PT_get_LPFilter_output();
+		s2 = PT_get_HPFilter_output();
+		s3 = PT_get_DRFilter_output();
+		s4 = PT_get_SQRFilter_output();
+		s5 = PT_get_MVFilter_output();
+		ThI1 = PT_get_ThI1_output();
+		ThF1 = PT_get_ThF1_output();
+		sprintf(str,"%d,%d,%d,%d,%d,%d,%d,%d\r\n", delay, s1, s2, s3, s4, s5, ThI1, ThF1);
+		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+		break;
+	case rafalmmoreira:
+		delay = Rafael_PanTompkins(dataSample);
+		s1 = Rafael_get_LPFilter_output();
+		s2 = Rafael_get_HPFilter_output();
+		s3 = Rafael_get_DRFilter_output();
+		s4 = Rafael_get_SQRFilter_output();
+		s5 = Rafael_get_MVFilter_output();
+		ThI1 = Rafael_get_ThI1_output();
+		ThF1 = Rafael_get_ThF1_output();
+		sprintf(str,"%d,%d,%d,%d,%d,%d,%d,%d\r\n", delay, s1, s2, s3, s4, s5, ThI1, ThF1);
+		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+		break;
+	default:
+		return;
+		break;
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -85,7 +204,9 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  applicationState.dataType = int16asBytes;
+  applicationState.selectedImplementation = hoomam650;
+  PT_init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -118,7 +239,6 @@ int main(void)
 		  uint32_t index = 0;
 		  uint32_t count = 0;
 		  uint32_t i = 0;
-
 		  do
 		  {
 			  i++;
