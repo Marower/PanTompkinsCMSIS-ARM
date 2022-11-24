@@ -2,6 +2,20 @@
  Implementation of Pan-Tompkins algorithm with CMSIS DSP library for ARM
 
 ## Communication over serial terminal
+### Data opperation
+Each sample must be send in one line (ended with \r\n) with chosed format of data: <BR/>
+- as string - as human redable text
+- as bytes - two bytes integer, little endian coded.
+
+After each sample device will send actual values of valiable, as line with comma separated of values of Pan-Tompkins algorithm:
+Output,filter_value,deriverative,squared,moving_windows,THL1,THF\r\n
+- delay - 0 if peak wasn't detected or numer of sample delay for peek detected
+- filter_value - current filter value
+- deriverative - current value of derivative
+- squared - current value in squared values buffer 
+- moving_windows - current value in moving window
+- ThI1 - Threshold I1 (Integrated signal)
+- ThF1 - Threshold F1 (Band-passed signal)
 
 ### Commands
 Example:
