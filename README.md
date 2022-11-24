@@ -8,9 +8,10 @@ Each sample must be send in one line (ended with \r\n) with chosed format of dat
 - as bytes - two bytes integer, little endian coded.
 
 After each sample device will send actual values of valiable, as line with comma separated of values of Pan-Tompkins algorithm:
-Output,filter_value,deriverative,squared,moving_windows,THL1,THF\r\n
+Output,low_pass_filter_value,high_pass_filter_value,deriverative,squared,moving_windows,THL1,THF\r\n
 - delay - 0 if peak wasn't detected or numer of sample delay for peek detected
-- filter_value - current filter value
+- low_pass_filter_value - current low pass filter value
+- high_pass_filter_value - current low pass filter value
 - deriverative - current value of derivative
 - squared - current value in squared values buffer 
 - moving_windows - current value in moving window
