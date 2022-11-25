@@ -27,6 +27,7 @@
 #include "usbd_cdc_if.h"
 #include "PanTompkins_hooman650.h"
 #include "PanTompkins_rafaelmmoreira.h"
+#include "PanTompkins_marower.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

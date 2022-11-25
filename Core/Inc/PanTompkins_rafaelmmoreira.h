@@ -1,3 +1,5 @@
+//Code was modified to mimic the hooman650 implementation original version can be
+//found at: https://github.com/rafaelmmoreira/PanTompkinsQRS
 /**
  * ------------------------------------------------------------------------------*
  * File: panTompkins.h                                                           *
