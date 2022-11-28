@@ -45,6 +45,7 @@ struct State{
 
 #define hoomam650 0x31
 #define rafalmmoreira 0x32
+#define marower 0x33
 
 #define changeDataFormat 0x41
 #define changeSelectedAlgorithm 0x42
@@ -77,14 +78,14 @@ static void MX_I2C1_Init(void);
 
 struct State applicationState;
 
-char str[60];
+char str[250];
 uint16_t findStrEnd ()
 {
 	uint16_t end = 10;
 	while (str[end]!='\0')
 	{
 		end++;
-		if (end == 60)
+		if (end == 250)
 		{
 			break;
 		}
@@ -117,7 +118,12 @@ void parseLine (uint8_t* Buf, uint32_t Len)
 					sprintf(str,"OK, done.   \r\n");
 					while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
 				}
-
+				if (applicationState.selectedImplementation == marower)
+				{
+					arm_PT_init();
+					sprintf(str,"OK, done.   \r\n");
+					while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+				}
 				break;
 			default:
 				sprintf(str,"error...\r\n");
@@ -155,6 +161,13 @@ void parseLine (uint8_t* Buf, uint32_t Len)
 	int16_t ThI1;
 	int16_t ThF1;
 
+	float32_t s1_f32;
+	float32_t s2_f32;
+	float32_t s3_f32;
+	float32_t s4_f32;
+	float32_t s5_f32;
+	float32_t ThI1_f32;
+	float32_t ThF1_f32;
 	switch (applicationState.selectedImplementation)
 	{//decode data
 	case hoomam650:
@@ -179,6 +192,18 @@ void parseLine (uint8_t* Buf, uint32_t Len)
 		ThI1 = Rafael_get_ThI1_output();
 		ThF1 = Rafael_get_ThF1_output();
 		sprintf(str,"%d,%d,%d,%d,%d,%d,%d,%d\r\n", delay, s1, s2, s3, s4, s5, ThI1, ThF1);
+		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+		break;
+	case marower:
+		delay = arm_PT_ST(dataSample);
+		s1_f32 = arm_get_LPFilter_output();
+		s2_f32 = arm_get_HPFilter_output();
+		s3_f32 = arm_get_DRFilter_output();
+		s4_f32 = arm_get_SQRFilter_output();
+		s5_f32 = arm_get_MVFilter_output();
+		ThI1_f32 = arm_get_ThI1_output();
+		ThF1_f32 = arm_get_ThF1_output();
+		sprintf(str,"%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\r\n", delay, s1_f32, s2_f32, s3_f32, s4_f32, s5_f32, ThI1_f32, ThF1_f32);
 		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
 		break;
 	default:

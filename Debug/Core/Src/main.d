@@ -48,36 +48,36 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/PanTompkins_hooman650.h \
  ../Core/Inc/PanTompkins_rafaelmmoreira.h \
  ../Core/Inc/PanTompkins_marower.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math_types.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math_types.h \
  ../Drivers/CMSIS/Include/cmsis_compiler.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math_memory.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/none.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math_types.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/utils.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/basic_math_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math_memory.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/none.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/utils.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/interpolation_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/bayes_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/statistics_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/basic_math_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/fast_math_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/matrix_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/complex_math_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/statistics_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/controller_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/support_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/distance_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/svm_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/svm_defines.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/fast_math_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/transform_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/complex_math_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/filtering_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/support_functions.h \
- C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/quaternion_math_functions.h
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math_memory.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/none.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math_types.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/utils.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/basic_math_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math_memory.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/none.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/utils.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/interpolation_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/bayes_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/statistics_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/basic_math_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/fast_math_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/matrix_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/complex_math_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/statistics_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/controller_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/support_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/distance_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/svm_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/svm_defines.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/fast_math_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/transform_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/complex_math_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/filtering_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/support_functions.h \
+ C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/quaternion_math_functions.h
 ../Core/Inc/main.h:
 ../Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal.h:
 ../Core/Inc/stm32wbxx_hal_conf.h:
@@ -129,33 +129,33 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/PanTompkins_hooman650.h:
 ../Core/Inc/PanTompkins_rafaelmmoreira.h:
 ../Core/Inc/PanTompkins_marower.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math_types.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math_types.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math_memory.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/none.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math_types.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/utils.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/basic_math_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/arm_math_memory.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/none.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/utils.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/interpolation_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/bayes_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/statistics_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/basic_math_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/fast_math_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/matrix_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/complex_math_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/statistics_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/controller_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/support_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/distance_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/svm_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/svm_defines.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/fast_math_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/transform_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/complex_math_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/filtering_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/support_functions.h:
-C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/dsp/quaternion_math_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math_memory.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/none.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math_types.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/utils.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/basic_math_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/arm_math_memory.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/none.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/utils.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/interpolation_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/bayes_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/statistics_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/basic_math_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/fast_math_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/matrix_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/complex_math_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/statistics_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/controller_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/support_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/distance_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/svm_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/svm_defines.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/fast_math_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/transform_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/complex_math_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/filtering_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/support_functions.h:
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/CMSIS-DSP/Include/dsp/quaternion_math_functions.h:

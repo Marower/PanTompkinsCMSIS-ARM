@@ -47,3 +47,7 @@ https://github.com/hooman650/Pan-Tompkins-FixedPoint#1<BR/>
 Byte[5] == '2' (0x32)<BR/>
 use modifiy Rafael de Moura Moreira's implementationn<BR/>
 https://github.com/rafaelmmoreira/PanTompkinsQRS<BR/>
+
+Byte[5] == '3' (0x33)<BR/>
+use implementation based on ARM CMSIS-DSP<BR/>
+https://github.com/Marower/PanTompkinsCMSIS-ARM<BR/>

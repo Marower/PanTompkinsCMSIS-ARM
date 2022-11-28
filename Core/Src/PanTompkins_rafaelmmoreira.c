@@ -164,7 +164,6 @@
 						// in the final end result.
 
 #include "PanTompkins_rafaelmmoreira.h"
-#include <stdio.h>      // Remove if not using the standard file functions.
 
 
 /*
