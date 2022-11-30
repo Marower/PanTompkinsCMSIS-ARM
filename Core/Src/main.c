@@ -60,6 +60,8 @@ struct State{
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+TIM_HandleTypeDef htim16;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -69,6 +71,7 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_TIM16_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -79,6 +82,22 @@ static void MX_I2C1_Init(void);
 struct State applicationState;
 
 char str[250];
+
+uint8_t USBBuffer[2048];
+uint8_t USBReciveBuffer[2048];
+uint16_t USBBuffer_index = 0;
+
+void sendUSBData (uint8_t* Buf, uint16_t Len)
+{
+	memcpy(&USBBuffer[USBBuffer_index], Buf, Len);
+	USBBuffer_index += Len;
+	if (USBBuffer_index>2000)
+	{
+		while (CDC_Transmit_FS(USBBuffer, USBBuffer_index)!= USBD_OK){};
+		USBBuffer_index = 0;
+	}
+}
+
 uint16_t findStrEnd ()
 {
 	uint16_t end = 10;
@@ -92,6 +111,9 @@ uint16_t findStrEnd ()
 	}
 	return end;
 }
+
+
+
 void parseLine (uint8_t* Buf, uint32_t Len)
 {//Function parse one line from serial port
 	//In line can be command or data
@@ -103,6 +125,8 @@ void parseLine (uint8_t* Buf, uint32_t Len)
 			{
 			case changeDataFormat:
 				applicationState.dataType = Buf[4];
+				sprintf(str,"OK, done.   \r\n");
+				while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
 				break;
 			case changeSelectedAlgorithm:
 				applicationState.selectedImplementation = Buf[4];
@@ -156,8 +180,8 @@ void parseLine (uint8_t* Buf, uint32_t Len)
 	int16_t s1;
 	int16_t s2;
 	int16_t s3;
-	int16_t s4;
-	int16_t s5;
+	uint16_t s4;
+	uint16_t s5;
 	int16_t ThI1;
 	int16_t ThF1;
 
@@ -179,8 +203,8 @@ void parseLine (uint8_t* Buf, uint32_t Len)
 		s5 = PT_get_MVFilter_output();
 		ThI1 = PT_get_ThI1_output();
 		ThF1 = PT_get_ThF1_output();
-		sprintf(str,"%d,%d,%d,%d,%d,%d,%d,%d\r\n", delay, s1, s2, s3, s4, s5, ThI1, ThF1);
-		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+		sprintf(str,"%d,%d,%d,%d,%u,%u,%u,%d\r\n", delay, s1, s2, s3, s4, s5, ThI1, ThF1);
+		sendUSBData (str, findStrEnd());
 		break;
 	case rafalmmoreira:
 		delay = Rafael_PanTompkins(dataSample);
@@ -192,7 +216,7 @@ void parseLine (uint8_t* Buf, uint32_t Len)
 		ThI1 = Rafael_get_ThI1_output();
 		ThF1 = Rafael_get_ThF1_output();
 		sprintf(str,"%d,%d,%d,%d,%d,%d,%d,%d\r\n", delay, s1, s2, s3, s4, s5, ThI1, ThF1);
-		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+		sendUSBData (str, findStrEnd());
 		break;
 	case marower:
 		delay = arm_PT_ST(dataSample);
@@ -204,7 +228,7 @@ void parseLine (uint8_t* Buf, uint32_t Len)
 		ThI1_f32 = arm_get_ThI1_output();
 		ThF1_f32 = arm_get_ThF1_output();
 		sprintf(str,"%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\r\n", delay, s1_f32, s2_f32, s3_f32, s4_f32, s5_f32, ThI1_f32, ThF1_f32);
-		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+		sendUSBData (str, findStrEnd());
 		break;
 	default:
 		return;
@@ -249,6 +273,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_Device_Init();
   MX_I2C1_Init();
+  MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -257,31 +282,36 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   extern uint32_t byteInBuffer;
   extern uint8_t* bufferPointer;
+  extern uint8_t bufferFlag;
+  HAL_TIM_Base_Start_IT(&htim16);
   while (1)
   {
     /* USER CODE END WHILE */
-	  if (byteInBuffer>0)
-	  {
-		  uint32_t index = 0;
-		  uint32_t count = 0;
-		  uint32_t i = 0;
-		  do
-		  {
-			  i++;
-			  count++;
-			  if (*(bufferPointer+i)=='\n')
-			  {
-				 count++;
-				 parseLine (bufferPointer +index, count);
-				 index += count;
-				 i++;
-				 count = 0;
-			  }
-		  }while (i<byteInBuffer);
-		  byteInBuffer = 0;
-	  }
-	  HAL_Delay(5);
+
     /* USER CODE BEGIN 3 */
+	  if ((byteInBuffer>0) && (bufferFlag == 1))
+	 	  {
+		  	  memcpy(&USBReciveBuffer[0],bufferPointer, byteInBuffer);
+		  	  uint32_t dataCount = byteInBuffer;
+		  	  byteInBuffer = 0;
+	 		  uint32_t count = 0;
+	 		  uint32_t i = 0;
+	 		  uint32_t index = 0;
+	 		  do
+	 		  {
+	 			  i++;
+	 			  count++;
+	 			  if (USBReciveBuffer[i]=='\n')
+	 			  {
+	 				 count++;
+	 				 parseLine (&USBReciveBuffer[index], count);
+	 				 index += count;
+	 				 i++;
+	 				 count = 0;
+	 			  }
+	 		  }while (i<dataCount);
+
+	 	  }
   }
   /* USER CODE END 3 */
 }
@@ -416,6 +446,38 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief TIM16 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM16_Init(void)
+{
+
+  /* USER CODE BEGIN TIM16_Init 0 */
+
+  /* USER CODE END TIM16_Init 0 */
+
+  /* USER CODE BEGIN TIM16_Init 1 */
+
+  /* USER CODE END TIM16_Init 1 */
+  htim16.Instance = TIM16;
+  htim16.Init.Prescaler = 639;
+  htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim16.Init.Period = 100;
+  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim16.Init.RepetitionCounter = 0;
+  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM16_Init 2 */
+
+  /* USER CODE END TIM16_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -430,7 +492,19 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+// Callback: timer has rolled over
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  // Check which version of the timer triggered this callback and toggle LED
+  if (htim == &htim16)
+  {
+	  if (USBBuffer_index> 0)
+	  {
+		  while (CDC_Transmit_FS(USBBuffer, USBBuffer_index)!= USBD_OK){};
+		  USBBuffer_index = 0;
+	  }
+  }
+}
 /* USER CODE END 4 */
 
 /**

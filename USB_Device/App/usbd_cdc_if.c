@@ -96,6 +96,7 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 /* USER CODE BEGIN PRIVATE_VARIABLES */
 uint32_t byteInBuffer =0;
 uint8_t* bufferPointer = &UserRxBufferFS[0];
+uint8_t bufferFlag = 1;
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -262,9 +263,18 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
+	bufferFlag = 0;
+  if (byteInBuffer>2047)
+  {//This is a error data loss...
+	  byteInBuffer = 0;
+  }
+  memcpy(&UserTxBufferFS[byteInBuffer],&Buf[0], *Len);
+  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[byteInBuffer]);
+
+
   byteInBuffer += *Len;
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+	bufferFlag = 1;
   return (USBD_OK);
   /* USER CODE END 6 */
 }

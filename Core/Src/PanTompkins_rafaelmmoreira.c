@@ -592,7 +592,7 @@ int16_t Rafael_PanTompkins(dataType input)
 		// for the current sample, we might miss a peak that could've been found later by backsearching using
 		// lighter thresholds. The final waveform output does match the original signal, though.
 
-		//UPDATE: If peak was detected returns sample delay, else returns 0
+		//My UPDATE: If peak was detected returns sample delay, else returns 0
 		return result;
 }
 

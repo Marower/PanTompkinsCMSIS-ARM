@@ -6,4 +6,4 @@
 ../USB_Device/App/usbd_desc.c:302:11:USBD_CDC_ConfigStrDescriptor	16	static
 ../USB_Device/App/usbd_desc.c:321:11:USBD_CDC_InterfaceStrDescriptor	16	static
 ../USB_Device/App/usbd_desc.c:339:13:Get_SerialNum	24	static
-../USB_Device/App/usbd_desc.c:363:13:IntToUnicode	32	static
+../USB_Device/App/usbd_desc.c:365:13:IntToUnicode	32	static

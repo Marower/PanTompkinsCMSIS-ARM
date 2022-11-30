@@ -57,6 +57,7 @@ void parseLine (uint8_t* Buf, uint32_t Len);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
