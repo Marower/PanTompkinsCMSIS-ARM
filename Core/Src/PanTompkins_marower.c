@@ -68,14 +68,22 @@ static float32_t firStateF32[2 * BLOCK_SIZE + NUM_DERIVATIVE_TAPS - 1];
 static float32_t firStateF32[BLOCK_SIZE + NUM_DERIVATIVE_TAPS - 1];
 #endif
 
+
+//Time constants of Pan-Tompkins Algorith
+//Moving Average window
 //150ms for 360 Sa/s
 #define MovingAverageSampleCount 54
+//Latency after QRS
+//200ms for 360Sa/s
+#define latencyDelayTreshold 72
+//Emergency restart in oryginal paper this was implemented as look-back
+//sample count corresponding to 4000ms for 360Sa/s
+#define latencyTreshold 1440
 
 //Instance structure for the floating-point FIR filter:
 arm_fir_instance_f32 Derivative;
-
+//derivative filter
 float32_t derivativeBuffer[NUM_DERIVATIVE_TAPS_ARRAY_SIZE];
-
 float32_t derivativeOutput[0];
 
 //Used Biquad Cascade IIR Filters using direct form I for high-pass and low-pass
@@ -120,7 +128,6 @@ float32_t lowPassFilterResult;
 float32_t squaredValue;
 
 //moving average buffer
-
 int movingAverageBufferIndex = 0;
 float32_t movingAverageBuffer[MovingAverageSampleCount];
 float32_t meanValue;
@@ -153,8 +160,9 @@ void arm_PT_init()
 	}
 }
 
-
-
+float previousMean = 0, TresholdI = 0, SignalLevelI = 0, NoiseLevelI = 0;
+float previousSignalPeak = 0, TresholdF = 0, SignalLevelF = 0, NoiseLevelF = 0;
+uint16_t peakTimeDelay = 0, latencyDelay = 0;
 int16_t arm_PT_ST(int16_t sample)
 {
 	float32_t newSample = (float)sample;
@@ -164,6 +172,24 @@ int16_t arm_PT_ST(int16_t sample)
 	arm_biquad_cascade_df1_f32 (&highPassFilter, &lowPassFilterResult,&highPassFilterResult,1);
 	//Derivative with FIR filter
 	//putOnMovingAverageBuffer(lowPassFilterResult);
+
+	//Store potential peak value (QRS can be also minimum or maximum)
+	float potentialPeak = lowPassFilterResult*lowPassFilterResult;
+	if (potentialPeak>previousSignalPeak)
+	{//Store maximum of squared signal
+		previousSignalPeak = potentialPeak;
+		peakTimeDelay = 0;
+	}
+	peakTimeDelay++;
+	if (latencyDelay < latencyTreshold)
+	{
+		latencyDelay++;
+	}
+	else
+	{//If peak wasn't find in given time restart
+		latencyDelay = 0;
+		arm_PT_init();
+	}
 	arm_fir_f32 (&Derivative,&lowPassFilterResult,&derivativeOutput[0],BLOCK_SIZE);
 	//Square the value
 	squaredValue = derivativeOutput[0] * derivativeOutput[0];
@@ -171,7 +197,53 @@ int16_t arm_PT_ST(int16_t sample)
 	putOnMovingAverageBuffer(squaredValue);
 	arm_mean_f32 (&movingAverageBuffer[0], MovingAverageSampleCount, &meanValue);
 
-	//TODO: Implement QRS detection
+	//Detection of maximum in moving average signal
+	if (meanValue>previousMean)
+	{//This is not maximum
+		previousMean = meanValue;
+	}
+	else
+	{//Lets analysis maximum in integration signal
+		if ((previousMean > TresholdI) && (latencyDelay > latencyDelayTreshold))
+		{//It's potential QRS
+			if (previousSignalPeak>TresholdF)
+			{//If peak is above threshold it's QRS
+				SignalLevelF = 0.125*previousSignalPeak + 0.875*SignalLevelF;
+				TresholdF = NoiseLevelF + 0.25 * (SignalLevelF - NoiseLevelF);
+
+				SignalLevelI = 0.125*meanValue + 0.875*SignalLevelI;
+				TresholdI = NoiseLevelI + 0.25 * (SignalLevelI - NoiseLevelI);
+				previousSignalPeak = 0;
+				previousMean = 0;
+				latencyDelay = 0;
+				return peakTimeDelay;
+
+			}
+			else
+			{//It's noise peak
+				NoiseLevelF = 0.125*previousSignalPeak + 0.875*NoiseLevelI;
+				TresholdF = NoiseLevelF + 0.25 * (SignalLevelF - NoiseLevelF);
+
+				NoiseLevelI = 0.125*meanValue + 0.875*NoiseLevelI;
+				TresholdI = NoiseLevelI + 0.25 * (SignalLevelI - NoiseLevelI);
+
+				previousSignalPeak = 0;
+				previousMean = 0;
+			}
+		}
+		else
+		{//It's just noise
+			NoiseLevelF = 0.125*previousSignalPeak + 0.875*NoiseLevelI;
+			TresholdF = NoiseLevelF + 0.25 * (SignalLevelF - NoiseLevelF);
+
+			NoiseLevelI = 0.125*meanValue + 0.875*NoiseLevelI;
+			TresholdI = NoiseLevelI + 0.25 * (SignalLevelI - NoiseLevelI);
+
+			previousSignalPeak = 0;
+			previousMean = 0;
+		}
+	}
+
 	return 0;
 }
 
@@ -207,11 +279,11 @@ float32_t arm_get_MVFilter_output()
 float32_t arm_get_ThI1_output()
 {
 
-	return 0;
+	return TresholdI;
 }
 
 float32_t arm_get_ThF1_output()
 {
 
-	return 0;
+	return TresholdF;
 }
