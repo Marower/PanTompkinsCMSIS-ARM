@@ -1,9 +1,0 @@
-../Core/Src/PanTompkins_rafaelmmoreira.c:214:6:Rafael_init	4	static
-../Core/Src/PanTompkins_rafaelmmoreira.c:251:9:Rafael_PanTompkins	40	static
-../Core/Src/PanTompkins_rafaelmmoreira.c:600:9:Rafael_get_LPFilter_output	4	static
-../Core/Src/PanTompkins_rafaelmmoreira.c:604:9:Rafael_get_HPFilter_output	4	static
-../Core/Src/PanTompkins_rafaelmmoreira.c:608:9:Rafael_get_DRFilter_output	4	static
-../Core/Src/PanTompkins_rafaelmmoreira.c:612:9:Rafael_get_SQRFilter_output	4	static
-../Core/Src/PanTompkins_rafaelmmoreira.c:616:9:Rafael_get_MVFilter_output	4	static
-../Core/Src/PanTompkins_rafaelmmoreira.c:620:9:Rafael_get_ThI1_output	4	static
-../Core/Src/PanTompkins_rafaelmmoreira.c:624:9:Rafael_get_ThF1_output	4	static

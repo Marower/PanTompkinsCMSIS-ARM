@@ -1,0 +1,8 @@
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/Code - example/CMSIS-DSP Library/Source/ControllerFunctions/arm_pid_init_f32.c:51:6:arm_pid_init_f32	0	static
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/Code - example/CMSIS-DSP Library/Source/ControllerFunctions/arm_pid_init_q15.c:51:6:arm_pid_init_q15	4	static,ignoring_inline_asm
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/Code - example/CMSIS-DSP Library/Source/ControllerFunctions/arm_pid_init_q31.c:51:6:arm_pid_init_q31	8	static,ignoring_inline_asm
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/Code - example/CMSIS-DSP Library/Source/ControllerFunctions/arm_pid_reset_f32.c:45:6:arm_pid_reset_f32	0	static
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/Code - example/CMSIS-DSP Library/Source/ControllerFunctions/arm_pid_reset_q15.c:45:6:arm_pid_reset_q15	0	static
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/Code - example/CMSIS-DSP Library/Source/ControllerFunctions/arm_pid_reset_q31.c:45:6:arm_pid_reset_q31	0	static
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/Code - example/CMSIS-DSP Library/Source/ControllerFunctions/arm_sin_cos_f32.c:45:6:arm_sin_cos_f32	4	static
+C:/Users/mzylinsk/STM32CubeIDE/workspace_1.10.1/PanTompkins/Code - example/CMSIS-DSP Library/Source/ControllerFunctions/arm_sin_cos_q31.c:51:6:arm_sin_cos_q31	48	static
