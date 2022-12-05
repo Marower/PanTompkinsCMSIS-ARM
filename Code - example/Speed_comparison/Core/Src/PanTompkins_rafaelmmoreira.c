@@ -1,5 +1,3 @@
-//Code was modified to mimic the hooman650 implementation original version can be
-//found at: https://github.com/rafaelmmoreira/PanTompkinsQRS
 /**
  * ------------------------------------------------------------------------------*
  * File: panTompkins.c                                                           *
@@ -162,9 +160,12 @@
 #define DELAY 22		// Delay introduced by the filters. Filter only output samples after this one.
 						// Set to 0 if you want to keep the delay. Fixing the delay results in DELAY less samples
 						// in the final end result.
-
+//Changed name of the file
 #include "PanTompkins_rafaelmmoreira.h"
+//#include <stdio.h>      // Remove if not using the standard file functions.
 
+
+//FILE *fin, *fout;       // Remove them if not using files and <stdio.h>.
 
 /*
     Use this function for any kind of setup you need before getting samples.
@@ -172,86 +173,120 @@
     a serial connection.
     Remember to update its parameters on the panTompkins.h file as well.
 */
- // The signal array is where the most recent samples are kept. The other arrays are the outputs of each
- // filtering module: DC Block, low pass, high pass, integral etc.
-	// The output is a buffer where we can change a previous result (using a back search) before outputting.
-	dataType RF_signal[BUFFSIZE], RF_dcblock[BUFFSIZE], RF_lowpass[BUFFSIZE], RF_highpass[BUFFSIZE], RF_derivative[BUFFSIZE], RF_squared[BUFFSIZE], RF_integral[BUFFSIZE], RF_outputSignal[BUFFSIZE];
+//Changes: function now init all variables, changed function name
+// The signal array is where the most recent samples are kept. The other arrays are the outputs of each
+// filtering module: DC Block, low pass, high pass, integral etc.
+// The output is a buffer where we can change a previous result (using a back search) before outputting.
+dataType ECGsignal[BUFFSIZE], dcblock[BUFFSIZE], lowpass[BUFFSIZE], highpass[BUFFSIZE], derivative[BUFFSIZE], squared[BUFFSIZE], integral[BUFFSIZE], outputSignal[BUFFSIZE];
+// rr1 holds the last 8 RR intervals. rr2 holds the last 8 RR intervals between rrlow and rrhigh.
+// rravg1 is the rr1 average, rr2 is the rravg2. rrlow = 0.92*rravg2, rrhigh = 1.08*rravg2 and rrmiss = 1.16*rravg2.
+// rrlow is the lowest RR-interval considered normal for the current heart beat, while rrhigh is the highest.
+// rrmiss is the longest that it would be expected until a new QRS is detected. If none is detected for such
+// a long interval, the thresholds must be adjusted.
+int rr1[8], rr2[8], rravg1, rravg2, rrlow = 0, rrhigh = 0, rrmiss = 0;
+// i and j are iterators for loops.
+// sample counts how many samples have been read so far.
+// lastQRS stores which was the last sample read when the last R sample was triggered.
+// lastSlope stores the value of the squared slope when the last R sample was triggered.
+// currentSlope helps calculate the max. square slope for the present sample.
+// These are all long unsigned int so that very long signals can be read without messing the count.
+long unsigned int i, j, sample = 0, lastQRS = 0, lastSlope = 0, currentSlope = 0;
+// This variable is used as an index to work with the signal buffers. If the buffers still aren't
+// completely filled, it shows the last filled position. Once the buffers are full, it'll always
+// show the last position, and new samples will make the buffers shift, discarding the oldest
+// sample and storing the newest one on the last position.
+int current;
+// There are the variables from the original Pan-Tompkins algorithm.
+// The ones ending in _i correspond to values from the integrator.
+// The ones ending in _f correspond to values from the DC-block/low-pass/high-pass filtered signal.
+// The peak variables are peak candidates: signal values above the thresholds.
+// The threshold 1 variables are the threshold variables. If a signal sample is higher than this threshold, it's a peak.
+// The threshold 2 variables are half the threshold 1 ones. They're used for a back search when no peak is detected for too long.
+// The spk and npk variables are, respectively, running estimates of signal and noise peaks.
+dataType peak_i = 0, peak_f = 0, threshold_i1 = 0, threshold_i2 = 0, threshold_f1 = 0, threshold_f2 = 0, spk_i = 0, spk_f = 0, npk_i = 0, npk_f = 0;
+// qrs tells whether there was a detection or not.
+// regular tells whether the heart pace is regular or not.
+// prevRegular tells whether the heart beat was regular before the newest RR-interval was calculated.
+bool qrs, regular = true, prevRegular;
 
-	// rr1 holds the last 8 RR intervals. rr2 holds the last 8 RR intervals between rrlow and rrhigh.
-	// rravg1 is the rr1 average, rr2 is the rravg2. rrlow = 0.92*rravg2, rrhigh = 1.08*rravg2 and rrmiss = 1.16*rravg2.
-	// rrlow is the lowest RR-interval considered normal for the current heart beat, while rrhigh is the highest.
-	// rrmiss is the longest that it would be expected until a new QRS is detected. If none is detected for such
-	// a long interval, the thresholds must be adjusted.
-	int rr1[8], rr2[8], rravg1, rravg2, rrlow = 0, rrhigh = 0, rrmiss = 0;
 
-	// i and j are iterators for loops.
-	// sample counts how many samples have been read so far.
-	// lastQRS stores which was the last sample read when the last R sample was triggered.
-	// lastSlope stores the value of the squared slope when the last R sample was triggered.
-	// currentSlope helps calculate the max. square slope for the present sample.
-	// These are all long unsigned int so that very long signals can be read without messing the count.
-	long unsigned int i, j, sample = 0, lastQRS = 0, lastSlope = 0, currentSlope = 0;
-
-	// This variable is used as an index to work with the signal buffers. If the buffers still aren't
-	// completely filled, it shows the last filled position. Once the buffers are full, it'll always
-	// show the last position, and new samples will make the buffers shift, discarding the oldest
-	// sample and storing the newest one on the last position.
-	int current;
-
-	// There are the variables from the original Pan-Tompkins algorithm.
-	// The ones ending in _i correspond to values from the integrator.
-	// The ones ending in _f correspond to values from the DC-block/low-pass/high-pass filtered signal.
-	// The peak variables are peak candidates: signal values above the thresholds.
-	// The threshold 1 variables are the threshold variables. If a signal sample is higher than this threshold, it's a peak.
-	// The threshold 2 variables are half the threshold 1 ones. They're used for a back search when no peak is detected for too long.
-	// The spk and npk variables are, respectively, running estimates of signal and noise peaks.
-	dataType peak_i = 0, peak_f = 0, threshold_i1 = 0, threshold_i2 = 0, threshold_f1 = 0, threshold_f2 = 0, spk_i = 0, spk_f = 0, npk_i = 0, npk_f = 0;
-
-	// qrs tells whether there was a detection or not.
-	// regular tells whether the heart pace is regular or not.
-	// prevRegular tells whether the heart beat was regular before the newest RR-interval was calculated.
-	bool qrs, regular = true, prevRegular;
-void Rafael_init()
+void Rafael_init(const char file_in[], const char file_out[])
 {
 
 
+
+	 rrlow = 0;
+	 rrhigh = 0;
+	 rrmiss = 0;
+
+
+	sample = 0;
+	lastQRS = 0;
+	lastSlope = 0;
+	currentSlope = 0;
+
+	peak_i = 0;
+	peak_f = 0;
+	threshold_i1 = 0;
+	threshold_i2 = 0;
+	threshold_f1 = 0;
+	threshold_f2 = 0;
+	spk_i = 0;
+	spk_f = 0;
+	npk_i = 0;
+	npk_f = 0;
+
+
+
+
+	regular = true;
 	// Initializing the RR averages
 	for (i = 0; i < 8; i++)
     {
         rr1[i] = 0;
         rr2[i] = 0;
     }
-	 rrlow = 0;
-	 rrhigh = 0;
-	 rrmiss = 0;
-	 regular = true;
-	 sample = 0;
-	 lastQRS = 0;
-	 lastSlope = 0;
-	 currentSlope = 0;
-	 peak_i = 0;
-	 peak_f = 0;
-	 threshold_i1 = 0;
-	 threshold_i2 = 0;
-	 threshold_f1 = 0;
-	 threshold_f2 = 0;
-	 spk_i = 0;
-	 spk_f = 0;
-	 npk_i = 0;
-	 npk_f = 0;
 }
 
+/*
+    Use this function to read and return the next sample (from file, serial,
+    A/D converter etc) and put it in a suitable, numeric format. Return the
+    sample, or NOSAMPLE if there are no more samples.
+*/
+ /*
+dataType input()
+{
+	int num = NOSAMPLE;
+	if (!feof(fin))
+		fscanf(fin, "%d", &num);
 
+	return num;
+}*/
+
+/*
+    Use this function to output the information you see fit (last RR-interval,
+    sample index which triggered a peak detection, whether each sample was a R
+    peak (1) or not (0) etc), in whatever way you see fit (write on screen, write
+    on file, blink a LED, call other functions to do other kinds of processing,
+    such as feature extraction etc). Change its parameters to receive the necessary
+    information to output.
+*/
+ /*
+void output(int out)
+{
+	fprintf(fout, "%d\n", out);
+}
+*/
 /*
     This is the actual QRS-detecting function. It's a loop that constantly calls the input and output functions
     and updates the thresholds and averages until there are no more samples. More details both above and in
     shorter comments below.
 */
-//UPDATe: I changed the way that it operates, now works like hooman650's implementation
-int16_t Rafael_PanTompkins(dataType input)
+//Changes: remove loop, function analyse one sample, removed all output call.
+void Rafael_PanTompkins(dataType InputSample)
 {
 
-		int16_t result = 0;
+
         // Test if the buffers are full.
         // If they are, shift them, discarding the oldest sample and adding the new one at the end.
         // Else, just put the newest sample in the next free position.
@@ -260,101 +295,99 @@ int16_t Rafael_PanTompkins(dataType input)
 		{
 			for (i = 0; i < BUFFSIZE - 1; i++)
 			{
-				RF_signal[i] =RF_signal[i+1];
-				RF_dcblock[i] = RF_dcblock[i+1];
-				RF_lowpass[i] = RF_lowpass[i+1];
-				RF_highpass[i] = RF_highpass[i+1];
-				RF_derivative[i] = RF_derivative[i+1];
-				RF_squared[i] = RF_squared[i+1];
-				RF_integral[i] = RF_integral[i+1];
-				RF_outputSignal[i] = RF_outputSignal[i+1];
+				ECGsignal[i] = ECGsignal[i+1];
+				dcblock[i] = dcblock[i+1];
+				lowpass[i] = lowpass[i+1];
+				highpass[i] = highpass[i+1];
+				derivative[i] = derivative[i+1];
+				squared[i] = squared[i+1];
+				integral[i] = integral[i+1];
+				outputSignal[i] = outputSignal[i+1];
 			}
 			current = BUFFSIZE - 1;
 		}
 		else
 		{
-			current = sample;
+			current = InputSample;
 		}
-		RF_signal[current] = input;
+		ECGsignal[current] = InputSample;
 
-		// If no sample was read, stop processing!
-		//if (signal[current] == NOSAMPLE)
-		//	break;
+
 		sample++; // Update sample counter
 
 		// DC Block filter
 		// This was not proposed on the original paper.
 		// It is not necessary and can be removed if your sensor or database has no DC noise.
 		if (current >= 1)
-			RF_dcblock[current] = RF_signal[current] - RF_signal[current-1] + 0.995*RF_dcblock[current-1];
+			dcblock[current] = ECGsignal[current] - ECGsignal[current-1] + 0.995*dcblock[current-1];
 		else
-			RF_dcblock[current] = 0;
+			dcblock[current] = 0;
 
 		// Low Pass filter
 		// Implemented as proposed by the original paper.
 		// y(nT) = 2y(nT - T) - y(nT - 2T) + x(nT) - 2x(nT - 6T) + x(nT - 12T)
 		// Can be removed if your signal was previously filtered, or replaced by a different filter.
-		RF_lowpass[current] = RF_dcblock[current];
+		lowpass[current] = dcblock[current];
 		if (current >= 1)
-			RF_lowpass[current] += 2*RF_lowpass[current-1];
+			lowpass[current] += 2*lowpass[current-1];
 		if (current >= 2)
-			RF_lowpass[current] -= RF_lowpass[current-2];
+			lowpass[current] -= lowpass[current-2];
 		if (current >= 6)
-			RF_lowpass[current] -= 2*RF_dcblock[current-6];
+			lowpass[current] -= 2*dcblock[current-6];
 		if (current >= 12)
-			RF_lowpass[current] += RF_dcblock[current-12];
+			lowpass[current] += dcblock[current-12];
 
 		// High Pass filter
 		// Implemented as proposed by the original paper.
 		// y(nT) = 32x(nT - 16T) - [y(nT - T) + x(nT) - x(nT - 32T)]
 		// Can be removed if your signal was previously filtered, or replaced by a different filter.
-		RF_highpass[current] = -RF_lowpass[current];
+		highpass[current] = -lowpass[current];
 		if (current >= 1)
-			RF_highpass[current] -= RF_highpass[current-1];
+			highpass[current] -= highpass[current-1];
 		if (current >= 16)
-			RF_highpass[current] += 32*RF_lowpass[current-16];
+			highpass[current] += 32*lowpass[current-16];
 		if (current >= 32)
-			RF_highpass[current] += RF_lowpass[current-32];
+			highpass[current] += lowpass[current-32];
 
 		// Derivative filter
 		// This is an alternative implementation, the central difference method.
 		// f'(a) = [f(a+h) - f(a-h)]/2h
 		// The original formula used by Pan-Tompkins was:
 		// y(nT) = (1/8T)[-x(nT - 2T) - 2x(nT - T) + 2x(nT + T) + x(nT + 2T)]
-		RF_derivative[current] = RF_highpass[current];
+        derivative[current] = highpass[current];
 		if (current > 0)
-			RF_derivative[current] -= RF_highpass[current-1];
+			derivative[current] -= highpass[current-1];
 
 		// This just squares the derivative, to get rid of negative values and emphasize high frequencies.
 		// y(nT) = [x(nT)]^2.
-		RF_squared[current] = RF_derivative[current]*RF_derivative[current];
+		squared[current] = derivative[current]*derivative[current];
 
 		// Moving-Window Integration
 		// Implemented as proposed by the original paper.
 		// y(nT) = (1/N)[x(nT - (N - 1)T) + x(nT - (N - 2)T) + ... x(nT)]
 		// WINDOWSIZE, in samples, must be defined so that the window is ~150ms.
 
-		RF_integral[current] = 0;
+		integral[current] = 0;
 		for (i = 0; i < WINDOWSIZE; i++)
 		{
 			if (current >= (dataType)i)
-				RF_integral[current] += RF_squared[current - i];
+				integral[current] += squared[current - i];
 			else
 				break;
 		}
-		RF_integral[current] /= (dataType)i;
+		integral[current] /= (dataType)i;
 
 		qrs = false;
 
 		// If the current signal is above one of the thresholds (integral or filtered signal), it's a peak candidate.
-        if (RF_integral[current] >= threshold_i1 || RF_highpass[current] >= threshold_f1)
+        if (integral[current] >= threshold_i1 || highpass[current] >= threshold_f1)
         {
-            peak_i = RF_integral[current];
-            peak_f = RF_highpass[current];
+            peak_i = integral[current];
+            peak_f = highpass[current];
         }
 
 		// If both the integral and the signal are above their thresholds, they're probably signal peaks.
-		if ((RF_integral[current] >= threshold_i1) && (RF_highpass[current] >= threshold_f1))
+		if ((integral[current] >= threshold_i1) && (highpass[current] >= threshold_f1))
 		{
 			// There's a 200ms latency. If the new peak respects this condition, we can keep testing.
 			if (sample > lastQRS + FS/5)
@@ -366,8 +399,8 @@ int16_t Rafael_PanTompkins(dataType input)
 				    // at its peak value, rather than a low one.
 				    currentSlope = 0;
 				    for (j = current - 10; j <= current; j++)
-                        if (RF_squared[j] > currentSlope)
-                            currentSlope = RF_squared[j];
+                        if (squared[j] > currentSlope)
+                            currentSlope = squared[j];
 
 				    if (currentSlope <= (dataType)(lastSlope/2))
                     {
@@ -386,7 +419,6 @@ int16_t Rafael_PanTompkins(dataType input)
 
                         lastSlope = currentSlope;
                         qrs = true;
-
                     }
 				}
 				// If it was above both thresholds and respects both latency periods, it certainly is a R peak.
@@ -394,8 +426,8 @@ int16_t Rafael_PanTompkins(dataType input)
 				{
 				    currentSlope = 0;
                     for (j = current - 10; j <= current; j++)
-                        if (RF_squared[j] > currentSlope)
-                            currentSlope = RF_squared[j];
+                        if (squared[j] > currentSlope)
+                            currentSlope = squared[j];
 
                     spk_i = 0.125*peak_i + 0.875*spk_i;
                     threshold_i1 = npk_i + 0.25*(spk_i - npk_i);
@@ -407,22 +439,22 @@ int16_t Rafael_PanTompkins(dataType input)
 
                     lastSlope = currentSlope;
                     qrs = true;
-
 				}
 			}
 			// If the new peak doesn't respect the 200ms latency, it's noise. Update thresholds and move on to the next sample.
 			else
             {
-                peak_i = RF_integral[current];
+                peak_i = integral[current];
 				npk_i = 0.125*peak_i + 0.875*npk_i;
 				threshold_i1 = npk_i + 0.25*(spk_i - npk_i);
 				threshold_i2 = 0.5*threshold_i1;
-				peak_f = RF_highpass[current];
+				peak_f = highpass[current];
 				npk_f = 0.125*peak_f + 0.875*npk_f;
 				threshold_f1 = npk_f + 0.25*(spk_f - npk_f);
                 threshold_f2 = 0.5*threshold_f1;
                 qrs = false;
-                RF_outputSignal[current] = qrs;
+				outputSignal[current] = qrs;
+
             }
 
 		}
@@ -485,12 +517,12 @@ int16_t Rafael_PanTompkins(dataType input)
 			{
 				for (i = current - (sample - lastQRS) + FS/5; i < (long unsigned int)current; i++)
 				{
-					if ( (RF_integral[i] > threshold_i2) && (RF_highpass[i] > threshold_f2))
+					if ( (integral[i] > threshold_i2) && (highpass[i] > threshold_f2))
 					{
 					    currentSlope = 0;
                         for (j = i - 10; j <= i; j++)
-                            if (RF_squared[j] > currentSlope)
-                                currentSlope = RF_squared[j];
+                            if (squared[j] > currentSlope)
+                                currentSlope = squared[j];
 
                         if ((currentSlope < (dataType)(lastSlope/2)) && (i + sample) < lastQRS + 0.36*lastQRS)
                         {
@@ -498,8 +530,8 @@ int16_t Rafael_PanTompkins(dataType input)
                         }
                         else
                         {
-                            peak_i = RF_integral[i];
-                            peak_f = RF_highpass[i];
+                            peak_i = integral[i];
+                            peak_f = highpass[i];
                             spk_i = 0.25*peak_i+ 0.75*spk_i;
                             spk_f = 0.25*peak_f + 0.75*spk_f;
                             threshold_i1 = npk_i + 0.25*(spk_i - npk_i);
@@ -561,9 +593,9 @@ int16_t Rafael_PanTompkins(dataType input)
 
 				if (qrs)
                 {
-					RF_outputSignal[current] = false;
-					RF_outputSignal[i] = true;
-                    result = (current - i);
+                    outputSignal[current] = false;
+                    outputSignal[i] = true;
+
                 }
 			}
 
@@ -571,13 +603,13 @@ int16_t Rafael_PanTompkins(dataType input)
 			if (!qrs)
 			{
 				// If some kind of peak had been detected, then it's certainly a noise peak. Thresholds must be updated accordinly.
-				if ((RF_integral[current] >= threshold_i1) || (RF_highpass[current] >= threshold_f1))
+				if ((integral[current] >= threshold_i1) || (highpass[current] >= threshold_f1))
 				{
-					peak_i = RF_integral[current];
+					peak_i = integral[current];
 					npk_i = 0.125*peak_i + 0.875*npk_i;
 					threshold_i1 = npk_i + 0.25*(spk_i - npk_i);
 					threshold_i2 = 0.5*threshold_i1;
-					peak_f = RF_highpass[current];
+					peak_f = highpass[current];
 					npk_f = 0.125*peak_f + 0.875*npk_f;
 					threshold_f1 = npk_f + 0.25*(spk_f - npk_f);
 					threshold_f2 = 0.5*threshold_f1;
@@ -591,37 +623,6 @@ int16_t Rafael_PanTompkins(dataType input)
 		// However, it updates a few samples back from the buffer. The reason is that if we update the detection
 		// for the current sample, we might miss a peak that could've been found later by backsearching using
 		// lighter thresholds. The final waveform output does match the original signal, though.
+		outputSignal[current] = qrs;
 
-		//My UPDATE: If peak was detected returns sample delay, else returns 0
-		return result;
-}
-
-
-int16_t Rafael_get_LPFilter_output()
-{
-	return RF_lowpass[BUFFSIZE];
-}
-int16_t Rafael_get_HPFilter_output()
-{
-	return RF_highpass[BUFFSIZE];
-}
-int16_t Rafael_get_DRFilter_output()
-{
-	return RF_derivative[BUFFSIZE];
-}
-int16_t Rafael_get_SQRFilter_output()
-{
-	return RF_squared[current];
-}
-int16_t Rafael_get_MVFilter_output()
-{
-	return RF_integral[current];
-}
-int16_t Rafael_get_ThI1_output()
-{
-	return threshold_i1;
-}
-int16_t Rafael_get_ThF1_output()
-{
-	return threshold_f1;
 }

@@ -130,7 +130,21 @@ float32_t squaredValue;
 //moving average buffer
 int movingAverageBufferIndex = 0;
 float32_t movingAverageBuffer[MovingAverageSampleCount];
-float32_t meanValue;
+static float32_t meanDivider = 1/ MovingAverageSampleCount;
+float32_t MeanSum, meanValue;
+
+float32_t putOnMovingAverageBufferAndGetMean (float32_t sample)
+{
+	MeanSum -= movingAverageBuffer[movingAverageBufferIndex];
+	movingAverageBuffer[movingAverageBufferIndex] = sample;
+	MeanSum += sample;
+	movingAverageBufferIndex++;
+	if (movingAverageBufferIndex==MovingAverageSampleCount)
+	{
+		movingAverageBufferIndex = 0;
+	}
+	return MeanSum * meanDivider;
+}
 
 void putOnMovingAverageBuffer (float32_t sample)
 {
@@ -171,8 +185,8 @@ int16_t arm_PT_ST(int16_t sample)
 	arm_biquad_cascade_df1_f32 (&lowPassFilter, &newSample,&lowPassFilterResult,1);
 	//high pass filter operation
 	arm_biquad_cascade_df1_f32 (&highPassFilter, &lowPassFilterResult,&highPassFilterResult,1);
-	//Derivative with FIR filter
-	//putOnMovingAverageBuffer(lowPassFilterResult);
+
+
 
 	//Store potential peak value (QRS can be also minimum or maximum)
 	float potentialPeak = lowPassFilterResult*lowPassFilterResult;
@@ -187,16 +201,27 @@ int16_t arm_PT_ST(int16_t sample)
 		latencyDelay++;
 	}
 	else
-	{//If peak wasn't find in given time restart
+	{//If peak wasn't find in given time restart variables
 		latencyDelay = 0;
 		arm_PT_init();
 	}
+	if (latencyDelay == (latencyTreshold>>1))
+	{//In original algorithm this should be look-back
+		//here only decrease thresholds
+		TresholdI = TresholdI * 0.5;
+		TresholdF = TresholdF * 0.5;
+	}
+	//Derivative with FIR filter
 	arm_fir_f32 (&Derivative,&lowPassFilterResult,&derivativeOutput[0],BLOCK_SIZE);
 	//Square the value
 	squaredValue = derivativeOutput[0] * derivativeOutput[0];
 	//Compute moving average
-	putOnMovingAverageBuffer(squaredValue);
-	arm_mean_f32 (&movingAverageBuffer[0], MovingAverageSampleCount, &meanValue);
+	meanValue = putOnMovingAverageBufferAndGetMean(squaredValue);
+	/*In first version arm_mean_f32 funtion was used, but it was slow in each iteration compute sum of the buffer
+	 * now sum is compute
+	 */
+	//putOnMovingAverageBuffer(squaredValue);
+	//arm_mean_f32 (&movingAverageBuffer[0], MovingAverageSampleCount, &meanValue);
 
 	//Detection of maximum in moving average signal
 	if (meanValue!=previousMean)

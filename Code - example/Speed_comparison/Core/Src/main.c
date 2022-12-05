@@ -28,6 +28,8 @@
 #include "PanTompkins_hooman650.h"
 #include "PanTompkins_rafaelmmoreira.h"
 #include "PanTompkins_marower.h"
+
+#include "ECG_data.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-TIM_HandleTypeDef htim16;
+TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 
@@ -60,7 +62,7 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_TIM16_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -70,13 +72,11 @@ static void MX_TIM16_Init(void);
 
 char str[250];
 
-uint8_t ECG[2048];
-
 
 
 uint16_t findStrEnd ()
 {
-	uint16_t end = 10;
+	uint16_t end = 0;
 	while (str[end]!='\0')
 	{
 		end++;
@@ -125,7 +125,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_Device_Init();
   MX_I2C1_Init();
-  MX_TIM16_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -133,18 +133,70 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   //Initialise all libraries
-  PT_init();
-  Rafael_init();
-  arm_PT_init();
 
-  HAL_TIM_Base_Start_IT(&htim16);
+
+  HAL_TIM_Base_Start_IT(&htim2);
+  uint32_t computationTime;
+  uint16_t count = 0;
+  uint16_t N = 100;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	PT_init();
+	Rafael_init();
+	arm_PT_init();
+	sprintf(str,"%d iteration, %u samples, 1,000,000 ticks per second\r\n", N, ECG_samples);
+	while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+	//Test my implementation with ARM CMSIS-DSP
+	TIM2->CNT = 0;
+	for (uint16_t i = 0; i < N; i++)
+	{
+		count = 0;
+		do
+		{
+			arm_PT_ST (ECG[count]);
+			count++;
 
-  }
+		}while (count < ECG_samples);
+	}
+	computationTime = TIM2->CNT;
+	sprintf(str,"ARM CMSIS-DSP: %u ticks\r\n", computationTime);
+	while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+	 //Test hooman650 implementation
+	TIM2->CNT = 0;
+	for (uint16_t i = 0; i < N; i++)
+	{
+		count = 0;
+		do
+		{
+			PT_StateMachine (ECG[count]);
+			count++;
+
+			}while (count < ECG_samples);
+		}
+	    computationTime = TIM2->CNT;
+	 	sprintf(str,"hooman650: %u ticks\r\n", computationTime);
+	 	while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+
+	 //Test Rafael implementation
+	 TIM2->CNT = 0;
+	 for (uint16_t i = 0; i < N; i++)
+	 {
+	 	count = 0;
+		do
+		{
+			Rafael_PanTompkins (ECG[count]);
+			count++;
+
+			}while (count < ECG_samples);
+		}
+		computationTime = TIM2->CNT;
+		sprintf(str,"Rafael: %u ticks\r\n", computationTime);
+		while (CDC_Transmit_FS(str, findStrEnd())!= USBD_OK){};
+
+  	 }
   /* USER CODE END 3 */
 }
 
@@ -278,34 +330,47 @@ static void MX_I2C1_Init(void)
 }
 
 /**
-  * @brief TIM16 Initialization Function
+  * @brief TIM2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM16_Init(void)
+static void MX_TIM2_Init(void)
 {
 
-  /* USER CODE BEGIN TIM16_Init 0 */
+  /* USER CODE BEGIN TIM2_Init 0 */
 
-  /* USER CODE END TIM16_Init 0 */
+  /* USER CODE END TIM2_Init 0 */
 
-  /* USER CODE BEGIN TIM16_Init 1 */
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE END TIM16_Init 1 */
-  htim16.Instance = TIM16;
-  htim16.Init.Prescaler = 639;
-  htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim16.Init.Period = 100;
-  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim16.Init.RepetitionCounter = 0;
-  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 63;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4294967295;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM16_Init 2 */
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
 
-  /* USER CODE END TIM16_Init 2 */
+  /* USER CODE END TIM2_Init 2 */
 
 }
 

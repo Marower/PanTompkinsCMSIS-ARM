@@ -79,8 +79,8 @@ all: main-build
 main-build: PanTompkins-speedComparison.elf secondary-outputs
 
 # Tool invocations
-PanTompkins-speedComparison.elf PanTompkins-speedComparison.map: $(OBJS) $(USER_OBJS) C:\Users\mzylinsk\STM32CubeIDE\workspace_1.10.1\PanTompkins\Code\ -\ example\speed_comparison\STM32WB55CGUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "PanTompkins-speedComparison.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\mzylinsk\STM32CubeIDE\workspace_1.10.1\PanTompkins\Code - example\speed_comparison\STM32WB55CGUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PanTompkins-speedComparison.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+PanTompkins-speedComparison.elf PanTompkins-speedComparison.map: $(OBJS) $(USER_OBJS) C:\Users\mzylinsk\STM32CubeIDE\workspace_1.10.1\PanTompkins\Code\ -\ example\Speed_comparison\STM32WB55CGUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "PanTompkins-speedComparison.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\mzylinsk\STM32CubeIDE\workspace_1.10.1\PanTompkins\Code - example\Speed_comparison\STM32WB55CGUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PanTompkins-speedComparison.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

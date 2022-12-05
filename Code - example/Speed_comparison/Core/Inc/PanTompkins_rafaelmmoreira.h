@@ -39,12 +39,6 @@ typedef int16_t dataType;
 typedef enum {false, true} bool;
 
 void Rafael_init();
-int16_t Rafael_PanTompkins(dataType datum);
-int16_t Rafael_get_LPFilter_output();
-int16_t Rafael_get_HPFilter_output();
-int16_t Rafael_get_DRFilter_output();
-int16_t Rafael_get_SQRFilter_output();
-int16_t Rafael_get_MVFilter_output();
-int16_t Rafael_get_ThI1_output();
-int16_t Rafael_get_ThF1_output();
+void Rafael_PanTompkins(dataType datum);
+
 #endif
