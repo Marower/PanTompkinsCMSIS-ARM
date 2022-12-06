@@ -130,7 +130,8 @@ float32_t squaredValue;
 //moving average buffer
 int movingAverageBufferIndex = 0;
 float32_t movingAverageBuffer[MovingAverageSampleCount];
-static float32_t meanDivider = 1/ MovingAverageSampleCount;
+//static float32_t meanDivider = 1/ MovingAverageSampleCount; Problem, it can be round to 0
+static float32_t meanDivider = 0.01852;
 float32_t MeanSum, meanValue;
 
 float32_t putOnMovingAverageBufferAndGetMean (float32_t sample)
@@ -172,6 +173,8 @@ void arm_PT_init()
 	{
 		movingAverageBuffer[i] = 0;
 	}
+	MeanSum = 0;
+	meanValue = 0;
 }
 
 float previousMean = 0, TresholdI = 0, SignalLevelI = 0, NoiseLevelI = 0;

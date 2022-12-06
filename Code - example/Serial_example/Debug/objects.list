@@ -17,8 +17,6 @@
 "./Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_flash_ex.o"
 "./Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_gpio.o"
 "./Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_hsem.o"
-"./Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_i2c.o"
-"./Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_i2c_ex.o"
 "./Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_pcd.o"
 "./Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_pcd_ex.o"
 "./Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_pwr.o"

@@ -51,3 +51,6 @@ https://github.com/rafaelmmoreira/PanTompkinsQRS<BR/>
 Byte[5] == '3' (0x33)<BR/>
 use implementation based on ARM CMSIS-DSP<BR/>
 https://github.com/Marower/PanTompkinsCMSIS-ARM<BR/>
+
+## Troubleshooting
+This application don't works with turn on optimalization...
