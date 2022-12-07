@@ -73,10 +73,12 @@ static float32_t firStateF32[BLOCK_SIZE + NUM_DERIVATIVE_TAPS - 1];
 //Moving Average window
 //150ms for 360 Sa/s
 #define MovingAverageSampleCount 54
-//Latency after QRS
-//200ms for 360Sa/s
-#define latencyDelayTreshold 72
-//Emergency restart in oryginal paper this was implemented as look-back
+//Latency after QRS discrimination of T-wave
+//200 for 360Sa/s
+#define latencyTwaveDelayTreshold 72
+//TODO: Implement identyfication of T-wave for interval of 200 to 360 ms
+//Emergency restart in original paper this was implemented as look-back]
+//Here after half time thresholds are divided by to
 //sample count corresponding to 4000ms for 360Sa/s
 #define latencyTreshold 1440
 
@@ -240,7 +242,7 @@ int16_t arm_PT_ST(int16_t sample)
 		{//Lets analysis maximum in integration signal
 			if(rissingEdge ==1)
 			{
-				if ((previousMean > TresholdI) && (latencyDelay > latencyDelayTreshold))
+				if ((previousMean > TresholdI) && (latencyDelay > latencyTwaveDelayTreshold))
 				{//It's potential QRS
 					if (previousSignalPeak>TresholdF)
 					{//If peak is above threshold it's QRS
