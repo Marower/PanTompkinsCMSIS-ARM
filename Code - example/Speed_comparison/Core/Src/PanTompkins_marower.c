@@ -76,7 +76,9 @@ static float32_t firStateF32[BLOCK_SIZE + NUM_DERIVATIVE_TAPS - 1];
 //Latency after QRS discrimination of T-wave
 //200 for 360Sa/s
 #define latencyTwaveDelayTreshold 72
-//TODO: Implement identyfication of T-wave for interval of 200 to 360 ms
+//identification of T-wave for interval of 200 to 360 ms
+#define latencyPossibleTwave 130
+
 //Emergency restart in original paper this was implemented as look-back]
 //Here after half time thresholds are divided by to
 //sample count corresponding to 4000ms for 360Sa/s
@@ -159,13 +161,18 @@ void putOnMovingAverageBuffer (float32_t sample)
 	}
 }
 
+float previousMean = 0, TresholdI = 0, SignalLevelI = 0, NoiseLevelI = 0;
+float previousSignalPeak = 0, lastQRSpeak = 0, TresholdF = 0, SignalLevelF = 0, NoiseLevelF = 0;
+uint16_t peakTimeDelay = 0, latencyDelay = 0;
+uint8_t rissingEdge = 0;
+
 void arm_PT_init()
 {
 	//Initiate filter function
 	arm_fir_init_f32(&Derivative, NUM_DERIVATIVE_TAPS, (float32_t *)&firDerivativeCoefficients[0], &firStateF32[0], BLOCK_SIZE);
 	arm_biquad_cascade_df1_init_f32 (&highPassFilter,1, (float32_t *)&iirHighPassFilterCoefficients[0], &highPassFilterStateF32[0]);
 	arm_biquad_cascade_df1_init_f32 (&lowPassFilter,1, (float32_t *)&iirLowPassFilterCoefficients[0], &lowPassFilterStateF32[0]);
-	//Reset buffors
+	//Reset buffers
 	for (int i = 0; i<NUM_DERIVATIVE_TAPS_ARRAY_SIZE; i++)
 	{
 		derivativeBuffer[i]=0;
@@ -177,12 +184,19 @@ void arm_PT_init()
 	}
 	MeanSum = 0;
 	meanValue = 0;
+	TresholdI = 0;
+	SignalLevelI = 0;
+	NoiseLevelI = 0;
+	previousSignalPeak = 0;
+	lastQRSpeak = 0;
+	TresholdF = 0;
+	SignalLevelF = 0;
+	NoiseLevelF = 0;
+	peakTimeDelay = 0;
+	latencyDelay = 0;
 }
 
-float previousMean = 0, TresholdI = 0, SignalLevelI = 0, NoiseLevelI = 0;
-float previousSignalPeak = 0, TresholdF = 0, SignalLevelF = 0, NoiseLevelF = 0;
-uint16_t peakTimeDelay = 0, latencyDelay = 0;
-uint8_t rissingEdge = 0;
+
 int16_t arm_PT_ST(int16_t sample)
 {
 	float32_t newSample = (float)sample;
@@ -222,7 +236,7 @@ int16_t arm_PT_ST(int16_t sample)
 	squaredValue = derivativeOutput[0] * derivativeOutput[0];
 	//Compute moving average
 	meanValue = putOnMovingAverageBufferAndGetMean(squaredValue);
-	/*In first version arm_mean_f32 funtion was used, but it was slow in each iteration compute sum of the buffer
+	/*In first version arm_mean_f32 function was used, but it was slow in each iteration compute sum of the buffer
 	 * now sum is compute
 	 */
 	//putOnMovingAverageBuffer(squaredValue);
@@ -235,7 +249,7 @@ int16_t arm_PT_ST(int16_t sample)
 		{//This is not maximum
 			previousMean = meanValue;
 			if (previousMean != 0)
-				//At least 3 sample are rissing
+				//At least 3 sample are rising
 				rissingEdge = 1;
 		}
 		else
@@ -244,29 +258,47 @@ int16_t arm_PT_ST(int16_t sample)
 			{
 				if ((previousMean > TresholdI) && (latencyDelay > latencyTwaveDelayTreshold))
 				{//It's potential QRS
-					if (previousSignalPeak>TresholdF)
-					{//If peak is above threshold it's QRS
-						SignalLevelF = 0.125*previousSignalPeak + 0.875*SignalLevelF;
-						TresholdF = NoiseLevelF + 0.25 * (SignalLevelF - NoiseLevelF);
-
-						SignalLevelI = 0.125*meanValue + 0.875*SignalLevelI;
-						TresholdI = NoiseLevelI + 0.25 * (SignalLevelI - NoiseLevelI);
-						previousSignalPeak = 0;
-						previousMean = 0;
-						latencyDelay = 0;
-						return peakTimeDelay;
-
+					if (latencyDelay< latencyPossibleTwave)
+					{//If it was less than 360 ms it is possible that this peak is T-wave
+						if (previousSignalPeak>(lastQRSpeak*0.5))
+						{//It must be at least at half size of previous one to be QRS
+							SignalLevelF = 0.125*previousSignalPeak + 0.875*SignalLevelF;
+							TresholdF = NoiseLevelF + 0.25 * (SignalLevelF - NoiseLevelF);
+							lastQRSpeak = previousSignalPeak;
+							SignalLevelI = 0.125*meanValue + 0.875*SignalLevelI;
+							TresholdI = NoiseLevelI + 0.25 * (SignalLevelI - NoiseLevelI);
+							previousSignalPeak = 0;
+							previousMean = 0;
+							latencyDelay = 0;
+							return peakTimeDelay;
+						}
 					}
 					else
-					{//It's noise peak
-						NoiseLevelF = 0.125*previousSignalPeak + 0.875*NoiseLevelI;
-						TresholdF = NoiseLevelF + 0.25 * (SignalLevelF - NoiseLevelF);
+					{
+						if (previousSignalPeak>TresholdF)
+						{//If peak is above threshold it's QRS
+							SignalLevelF = 0.125*previousSignalPeak + 0.875*SignalLevelF;
+							TresholdF = NoiseLevelF + 0.25 * (SignalLevelF - NoiseLevelF);
+							lastQRSpeak = previousSignalPeak;
+							SignalLevelI = 0.125*meanValue + 0.875*SignalLevelI;
+							TresholdI = NoiseLevelI + 0.25 * (SignalLevelI - NoiseLevelI);
+							previousSignalPeak = 0;
+							previousMean = 0;
+							latencyDelay = 0;
+							return peakTimeDelay;
 
-						NoiseLevelI = 0.125*meanValue + 0.875*NoiseLevelI;
-						TresholdI = NoiseLevelI + 0.25 * (SignalLevelI - NoiseLevelI);
+						}
+						else
+						{//It's noise peak
+							NoiseLevelF = 0.125*previousSignalPeak + 0.875*NoiseLevelI;
+							TresholdF = NoiseLevelF + 0.25 * (SignalLevelF - NoiseLevelF);
 
-						previousSignalPeak = 0;
-						previousMean = 0;
+							NoiseLevelI = 0.125*meanValue + 0.875*NoiseLevelI;
+							TresholdI = NoiseLevelI + 0.25 * (SignalLevelI - NoiseLevelI);
+
+							previousSignalPeak = 0;
+							previousMean = 0;
+						}
 					}
 				}
 				else
