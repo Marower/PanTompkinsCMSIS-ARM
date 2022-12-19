@@ -61,24 +61,6 @@ void PeriphCommonClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-char str[250];
-
-
-
-uint16_t findStrEnd ()
-{
-	uint16_t end = 0;
-	while (str[end]!='\0')
-	{
-		end++;
-		if (end == 250)
-		{
-			break;
-		}
-	}
-	return end;
-}
-
 
 /* USER CODE END 0 */
 
@@ -139,8 +121,14 @@ int main(void)
 
 		}while (count < ECG_samples);
 	}
-	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 
+
+      /*Suspend Tick increment to prevent wakeup by Systick interrupt.
+      Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base)*/
+    HAL_SuspendTick();
+	//HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	//HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	HAL_PWR_EnterSTANDBYMode();
   /* USER CODE END 3 */
 }
 
